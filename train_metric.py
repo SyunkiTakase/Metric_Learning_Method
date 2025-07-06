@@ -60,21 +60,20 @@ def main(config_path, config):
 
     # 出力を保存するディレクトリ作成
     base_path = './output/' + method +'/' + str(timestamp) + '/'
-    sub_dirs = ['model', 'log', 'map']
+    sub_dirs = ['model/', 'log/', 'map/']
     for sub in sub_dirs:
         path = base_path + sub
         os.makedirs(path, exist_ok=True)
-        if sub == 'log':
-            csv_file = path + 'log.csv'
 
+    csv_file = base_path + 'log/log.csv'
     if not os.path.exists(csv_file):
         # ヘッダーを作成
         with open(csv_file, mode='w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Epoch', 'Train Loss', 'CE Loss', 'Metric Loss', 'Train Acc', 'Val Loss', 'Val Acc'])
 
-    cfg_name    = config_path.split('/')[-1]
-    cfg_dest    = f"{base_path}/{cfg_name}"
+    cfg_name = config_path.split('/')[-1]
+    cfg_dest = f"{base_path}/{cfg_name}"
     shutil.copy(config_path, cfg_dest)
 
     mean = [0.4915, 0.4823, 0.4468]
@@ -141,9 +140,9 @@ def main(config_path, config):
             csv_file, epoch, train_loss/len(train_loader), ce_loss/len(train_loader), metric_loss/len(train_loader),
                         train_count/len(train_loader.dataset), val_loss/len(val_loader), val_count/len(val_loader.dataset)
         )
-        if (epoch+1) % 10 == 0:
+        if (epoch+1) % 1 == 0:
             print('saved!!')
-            save_model_path = base_path + str(epoch + 1) + '.tar'
+            save_model_path = base_path + 'model/' + str(epoch + 1) + '.tar'
             torch.save({
                     'model':model.state_dict(),
                     'optimizer':optimizer.state_dict(),
