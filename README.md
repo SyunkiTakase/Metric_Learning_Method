@@ -48,23 +48,23 @@ Metric Learningのサンプルコード
 
 Siamese Networkの学習 
 ```
-python train_metric.py --confir_path SiameseNetwork.py
+python train_metric.py --config_path SiameseNetwork.py
 ```
 Triplet Lossの学習
 ```
-python train_metric.py --confir_path TripletLoss.py
+python train_metric.py --config_path TripletLoss.py
 ```
 ArcFaceの学習
 ```
-python train_metric.py --confir_path ArcFace.py
+python train_metric.py --config_path ArcFace.py
 ```
 CosFaceの学習
 ```
-python train_metric.py --confir_path CosFace.py
+python train_metric.py --config_path CosFace.py
 ```
 SphereFaceの学習
 ```
-python train_metric.py --confir_path SphereFace.py
+python train_metric.py --config_path SphereFace.py
 ```
 </details>
 
