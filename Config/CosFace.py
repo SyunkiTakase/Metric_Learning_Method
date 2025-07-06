@@ -3,11 +3,11 @@
 config = {
     "epoch": 20,
     "batch_size": 128,
-    "lr": 1e-3,
+    "lr": 1e-2,
     "img_size": 32,
     "dataset": "cifar10",
     "margin": 0.25,
-    "scale": 30,
+    "scale": 10,
     "method": "CosFace",
     "arch": "ResNet18",
     "_lambda": None,

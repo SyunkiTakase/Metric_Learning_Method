@@ -1,3 +1,5 @@
+import importlib
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -5,6 +7,8 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.models import resnet18, resnet34, resnet50, resnet152, vgg11, vgg13, vgg16, vgg19
+
+import base_model
 
 class MetricModel(nn.Module):
     def __init__(self, method='SiameseNetwork', arch='ResNet18', num_dim=512, num_classes=10):
@@ -58,7 +62,19 @@ class MetricModel(nn.Module):
             'VGG19': vgg19,
         }
         
-        if arch not in arch_map:
-            raise ValueError(f'Unsupported architecture: {arch}')
-        
-        self.encoder = arch_map[arch](weights='IMAGENET1K_V1')
+        if arch in arch_map:
+            self.encoder = arch_map[arch](weights='IMAGENET1K_V1')
+
+        else:
+            module_name = f'base_model.{arch}'
+            try:
+                module = importlib.import_module(module_name)
+            except ImportError as e:
+                raise ValueError(f'Unsupported architecture: {arch} (module {module_name} not found)') from e
+
+            try:
+                model_cls = getattr(module, arch)
+            except AttributeError as e:
+                raise ValueError(f'Module {module_name} does not define class {arch}') from e
+
+            self.encoder = model_cls()

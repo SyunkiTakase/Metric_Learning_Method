@@ -1,8 +1,10 @@
 import os
 import csv
+import shutil
 import argparse
 import pandas as pd
 import importlib.util
+from datetime import datetime
 
 import torch
 import torch.nn as nn
@@ -36,8 +38,9 @@ def save_to_csv(csv_file, epoch, train_loss=None, ce_loss=None, metric_loss=None
         writer = csv.writer(f)
         writer.writerow(new_row)
 
-def main(config):
+def main(config_path, config):
 
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # ハイパーパラメータ
@@ -56,7 +59,7 @@ def main(config):
     easy_margin = config['easy_margin']
 
     # 出力を保存するディレクトリ作成
-    base_path = './output/' + method +'/'
+    base_path = './output/' + method +'/' + str(timestamp) + '/'
     sub_dirs = ['model', 'log', 'map']
     for sub in sub_dirs:
         path = base_path + sub
@@ -68,10 +71,14 @@ def main(config):
         # ヘッダーを作成
         with open(csv_file, mode='w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Epoch', 'Train Loss', 'Train Acc', 'Val Loss', 'Val Acc'])
+            writer.writerow(['Epoch', 'Train Loss', 'CE Loss', 'Metric Loss', 'Train Acc', 'Val Loss', 'Val Acc'])
 
-    mean = [0.4914, 0.4822, 0.4465]
-    std = [0.2023, 0.1994, 0.2010]
+    cfg_name    = config_path.split('/')[-1]
+    cfg_dest    = f"{base_path}/{cfg_name}"
+    shutil.copy(config_path, cfg_dest)
+
+    mean = [0.4915, 0.4823, 0.4468]
+    std = [0.2470, 0.2435, 0.2616]
 
     train_transform = transforms.Compose([
         transforms.ToTensor(),
@@ -146,9 +153,9 @@ def main(config):
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, required=True, help="Path to config Python file")
+    parser.add_argument('--config_path', type=str, required=True, help="Path to config Python file")
 
     args = parser.parse_args()
-    config = load_config(args.config)
+    config = load_config(args.config_path)
 
-    main(config)
+    main(args.config_path, config)

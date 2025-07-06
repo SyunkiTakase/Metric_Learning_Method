@@ -24,7 +24,8 @@ def build_metric_method(method, arch, lr, num_classes , num_dim, margin, scale, 
         metric_loss_func = ArcFaceHead(num_dim, num_classes, s=scale, m=margin, easy_margin=easy_margin).to(device)
         optimizer = optim.SGD([{'params': model.parameters()}, {'params': metric_loss_func.parameters()}],
                             lr=lr, 
-                            weight_decay=5e-4)
+                            momentum=0.9,
+                            weight_decay=0.001)
 
         return model, metric_loss_func, optimizer, train_softmax, validation_softmax
 
@@ -33,7 +34,8 @@ def build_metric_method(method, arch, lr, num_classes , num_dim, margin, scale, 
         metric_loss_func = CosFaceHead(num_dim, num_classes, s=scale, m=margin).to(device)
         optimizer = optim.SGD([{'params': model.parameters()}, {'params': metric_loss_func.parameters()}],
                             lr=lr, 
-                            weight_decay=5e-4)
+                            momentum=0.9,
+                            weight_decay=0.001)
         
         return model, metric_loss_func, optimizer, train_softmax, validation_softmax
 
@@ -42,7 +44,8 @@ def build_metric_method(method, arch, lr, num_classes , num_dim, margin, scale, 
         metric_loss_func = SphereFaceHead(num_dim, num_classes, m=margin).to(device)
         optimizer = optim.SGD([{'params': model.parameters()}, {'params': metric_loss_func.parameters()}],
                             lr=lr, 
-                            weight_decay=5e-4)
+                            momentum=0.9,
+                            weight_decay=0.001)
 
         return model, metric_loss_func, optimizer, train_softmax, validation_softmax
 

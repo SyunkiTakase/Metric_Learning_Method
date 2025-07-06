@@ -7,7 +7,7 @@ config = {
     "img_size": 32,
     "dataset": "cifar10",
     "margin": 0.5,
-    "scale": 30,
+    "scale": 10,
     "method": "ArcFace",
     "arch": "ResNet18",
     "_lambda": None,
@@ -15,3 +15,4 @@ config = {
     "hard_triplets": None,
     "easy_margin": False,
 }
+
