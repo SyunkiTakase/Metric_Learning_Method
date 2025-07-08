@@ -40,7 +40,7 @@ def save_to_csv(csv_file, epoch, train_loss=None, ce_loss=None, metric_loss=None
 
 def main(config_path, config):
 
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d%H')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # ハイパーパラメータ
@@ -81,7 +81,7 @@ def main(config_path, config):
 
     train_transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.RandomCrop(img_size, padding=4),
+        # transforms.RandomCrop(img_size),
         transforms.RandomHorizontalFlip(),
         transforms.Resize((img_size, img_size)),
         transforms.Normalize(mean, std),

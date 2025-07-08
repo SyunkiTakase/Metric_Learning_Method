@@ -15,8 +15,10 @@ def build_metric_method(method, arch, lr, num_classes , num_dim, margin, scale, 
     elif method == 'TripletLoss':
         model = MetricModel(method=method, arch=arch, num_classes=num_classes).to(device)
         metric_loss_func = TripletLoss(margin=margin, hard_triplets=hard_triplets).to(device)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-
+        optimizer = optim.SGD(model.parameters(),
+                            lr=lr, 
+                            momentum=0.9,
+                            weight_decay=0.001)
         return model, metric_loss_func, optimizer, train_metric, validation
 
     elif method == 'ArcFace':
