@@ -4,6 +4,8 @@ config = {
     "epoch": 20,
     "batch_size": 128,
     "lr": 1e-3,
+    "weight_decay": 1e-4,
+    "momentum": None,
     "img_size": 224,
     "dataset": "cifar100",
     "margin": 1.0,

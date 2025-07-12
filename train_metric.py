@@ -47,6 +47,8 @@ def main(config_path, config):
     num_epoch = config['epoch']
     batch_size = config['batch_size']
     lr = config['lr']
+    weight_decay = config['weight_decay']
+    optim_momentum = config['momentum']
     img_size = config['img_size']
     dataset_name = config['dataset']
     margin = config['margin']
@@ -111,7 +113,7 @@ def main(config_path, config):
 
     # モデルの用意
     model, metric_loss_func, optimizer, train_fn, validation_fn = build_metric_method(
-        method, arch, lr, len(class_names), num_dim, margin, scale, use_hard_triplets, easy_margin, device
+        method, arch, lr, weight_decay, optim_momentum, len(class_names), num_dim, margin, scale, use_hard_triplets, easy_margin, device
     )
     ce_loss_func = torch.nn.CrossEntropyLoss()
     scaler = torch.cuda.amp.GradScaler(enabled=True)
