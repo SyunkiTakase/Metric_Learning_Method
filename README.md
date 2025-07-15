@@ -29,7 +29,7 @@ ArcFace ＆ CosFace & SphereFaceの学習の流れ
 |metric_model.py|Metric Learningのモデルのコード．|
 |train_metric.py|Metric Learningを導入したモデルを学習するコード．|
 |trainer.py|学習ループのコード．|
-|utils.py|Configファイルの読み込みを行みやモデル，損失，t-SNEを保存する関数を定義したコード．|
+|utils.py|Configファイルの読み込みやモデル，損失，t-SNEを保存する関数を定義したコード．|
 
 
 |ファイル名|説明|
@@ -56,23 +56,23 @@ ArcFace ＆ CosFace & SphereFaceの学習の流れ
 
 Siamese Networkの学習 
 ```
-python train_metric.py --config_path SiameseNetwork.py
+python train_metric.py --config_path ./Config/SiameseNetwork.py
 ```
 Triplet Lossの学習
 ```
-python train_metric.py --config_path TripletLoss.py
+python train_metric.py --config_path ./Config/TripletLoss.py
 ```
 ArcFaceの学習
 ```
-python train_metric.py --config_path ArcFace.py
+python train_metric.py --config_path ./Config/ArcFace.py
 ```
 CosFaceの学習
 ```
-python train_metric.py --config_path CosFace.py
+python train_metric.py --config_path ./Config/CosFace.py
 ```
 SphereFaceの学習
 ```
-python train_metric.py --config_path SphereFace.py
+python train_metric.py --config_path ./Config/SphereFace.py
 ```
 </details>
 
