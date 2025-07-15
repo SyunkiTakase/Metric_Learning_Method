@@ -52,8 +52,8 @@ class TripletLoss(nn.Module):
 
         positive_mask = (labels.unsqueeze(1) == labels.unsqueeze(0)).float() # 同じラベルのマスク（ポジティブ）
         negative_mask = (labels.unsqueeze(1) != labels.unsqueeze(0)).float() # 異なるラベルのマスク（ネガティブ）
-        # print('Pos mask:', positive_mask)
-        # print('Neg mask:', negative_mask)
+        # print('Pos Mask:', positive_mask)
+        # print('Neg Mask:', negative_mask)
 
         if self.use_hard_triplets: # Hard PositiveおよびHard Negativeを選択
             positive_dist = pairwise_dist * positive_mask

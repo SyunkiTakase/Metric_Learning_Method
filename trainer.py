@@ -14,6 +14,7 @@ from torchvision.transforms import ToPILImage
 
 def train(device, train_loader, model, criterion, optimizer, scaler, epoch):
     model.train()
+    
     sum_loss = 0.0
     count = 0
 
@@ -37,6 +38,7 @@ def train(device, train_loader, model, criterion, optimizer, scaler, epoch):
 
 def train_metric(device, train_loader, model, optimizer, scaler, epoch, ce_loss_func, metric_loss_func, _lambda):
     model.train()
+    
     sum_ce_loss = 0.0
     sum_metric_loss = 0.0
     sum_loss = 0.0
@@ -67,6 +69,7 @@ def train_metric(device, train_loader, model, optimizer, scaler, epoch, ce_loss_
 def train_softmax(device, train_loader, model, optimizer, scaler, epoch, ce_loss_func, metric_head, _lambda):
     model.train()
     metric_head.train()
+    
     sum_loss = 0.0
     count = 0
 
@@ -91,8 +94,10 @@ def train_softmax(device, train_loader, model, optimizer, scaler, epoch, ce_loss
 
 def validation(device, val_loader, model, ce_loss_func, metric_loss_func):
     model.eval()
+    
     sum_loss = 0.0
     count = 0
+    
     features_list = []
     labels_list = []
 
@@ -119,8 +124,10 @@ def validation(device, val_loader, model, ce_loss_func, metric_loss_func):
 def validation_softmax(device, val_loader, model, ce_loss_func, metric_head):
     model.eval()
     metric_head.eval()
+    
     sum_loss = 0.0
     count = 0
+    
     features_list = []
     labels_list = []
 

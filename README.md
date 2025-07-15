@@ -1,6 +1,12 @@
 # Metric Learning Method
 Metric Learningのサンプルコード
 
+Siamese Network & Triplet Lossの学習の流れ
+![flow1](./fig/Distance_Loss.png)
+
+ArcFace ＆ CosFace & SphereFaceの学習の流れ
+![flow2](./fig/Softmax_Loss.png)
+
 ## ファイル＆フォルダ一覧
 
 <details>
@@ -10,6 +16,7 @@ Metric Learningのサンプルコード
 |----|----|
 |base_model|モデルが定義されたファイルが格納されたフォルダ．|
 |Config|学習用のハイパーパラメータが記載されたConfigファイルが格納されたフォルダ．|
+|fig|図のフォルダ．|
 </details>
 
 <details>
@@ -22,6 +29,7 @@ Metric Learningのサンプルコード
 |metric_model.py|Metric Learningのモデルのコード．|
 |train_metric.py|Metric Learningを導入したモデルを学習するコード．|
 |trainer.py|学習ループのコード．|
+|utils.py|Configファイルの読み込みを行みやモデル，損失，t-SNEを保存する関数を定義したコード．|
 
 
 |ファイル名|説明|

@@ -49,7 +49,7 @@ def save_log(log_path, epoch, train_loss=None, ce_loss=None, metric_loss=None, t
         writer.writerow(new_row)
     print('saved log!!')
 
-def save_map(features, labels, class_names, save_map_path):
+def save_featspace(features, labels, class_names, save_featspace_path):
 
     plt.figure(figsize=(10,10))
     colors = ["red", "green", "blue", "orange", "purple", "brown", "fuchsia", "grey", "olive", "lightblue"]
@@ -61,5 +61,5 @@ def save_map(features, labels, class_names, save_map_path):
             plt.scatter(class_points[:, 0], class_points[:, 1], c=colors[i % len(colors)], label=class_name)
 
     plt.legend()
-    plt.savefig(save_map_path)
-    print('saved feature map!!')
+    plt.savefig(save_featspace_path)
+    print('saved feature space!!')

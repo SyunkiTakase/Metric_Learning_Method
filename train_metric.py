@@ -16,7 +16,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 from method_config import build_metric_method
-from utils import load_config, save_model, save_log, save_map
+from utils import load_config, save_model, save_log, save_featspace
 
 def main(config_path, config):
 
@@ -39,7 +39,7 @@ def main(config_path, config):
     num_dim = config['num_dim']
     use_hard_triplets = config['hard_triplets']
     easy_margin = config['easy_margin']
-    plot_map = config["plot_map"]
+    vis_featspace = config["vis_featspace"]
 
     # 出力を保存するディレクトリ作成
     base_path = './output/' + method +'/' + str(timestamp) + '/'
@@ -50,7 +50,7 @@ def main(config_path, config):
 
     model_path = base_path + 'model/' 
     log_path = base_path + 'log/log.csv'
-    map_path = base_path + 'map/'
+    featspace_path = base_path + 'featspace/'
 
     if not os.path.exists(log_path):
         with open(log_path, mode='w', newline='') as f:
@@ -61,6 +61,7 @@ def main(config_path, config):
     cfg_dest = f"{base_path}/{cfg_name}"
     shutil.copy(config_path, cfg_dest)
 
+    # データ拡張とデータローダーの設定
     mean = [0.4915, 0.4823, 0.4468]
     std = [0.2470, 0.2435, 0.2616]
 
@@ -108,6 +109,7 @@ def main(config_path, config):
     param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'Total number of trainable parameters: {param_count}')
 
+    # 学習 & 検証ループ
     for epoch in range(num_epoch):
         ce_loss, metric_loss, train_loss, train_count = train_fn(
             device, train_loader, model, optimizer, scaler, epoch, ce_loss_func, metric_loss_func, _lambda
@@ -121,18 +123,19 @@ def main(config_path, config):
         print(f'Epoch [{epoch+1}/{num_epoch}], Trainig Acc: {train_count/len(train_loader.dataset):.4f}, Validation Acc: {val_count/len(val_loader.dataset):.4f} ')
 
         # ログ，モデル，t-SNEを保存
-        if (epoch+1) % 1 == 0:
+        if (epoch+1) % 10 == 0:
             save_model_path = model_path + str(epoch + 1) + '.tar'
             save_model(model, optimizer, epoch, save_model_path)
 
         save_log(
-            log_path, epoch, train_loss/len(train_loader), ce_loss/len(train_loader), metric_loss/len(train_loader),
-                        train_count/len(train_loader.dataset), val_loss/len(val_loader), val_count/len(val_loader.dataset)
+            log_path, epoch, 
+            train_loss/len(train_loader), ce_loss/len(train_loader), metric_loss/len(train_loader),train_count/len(train_loader.dataset), 
+            val_loss/len(val_loader), val_count/len(val_loader.dataset)
         )
 
-        if plot_map:
-            save_map_path = map_path + str(epoch + 1) + '.png'
-            save_map(features_np, labels_np, class_names, save_map_path)
+        if vis_featspace:
+            save_featspace_path = featspace_path + str(epoch + 1) + '.png'
+            save_featspace(features_np, labels_np, class_names, save_featspace_path)
 
 if __name__=='__main__':
 

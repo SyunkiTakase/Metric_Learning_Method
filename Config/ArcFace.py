@@ -16,6 +16,6 @@ config = {
     "num_dim": 512,
     "hard_triplets": None,
     "easy_margin": False,
-    "plot_map": True
+    "vis_featspace": True
 }
 
