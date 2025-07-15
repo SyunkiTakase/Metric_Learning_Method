@@ -17,13 +17,13 @@ def train(device, train_loader, model, criterion, optimizer, scaler, epoch):
     sum_loss = 0.0
     count = 0
 
-    for idx, (img, label) in enumerate(tqdm(train_loader)):
-        img = img.to(device, non_blocking=True).float()
-        label = label.to(device, non_blocking=True).long()
+    for idx, (imgs, labels) in enumerate(tqdm(train_loader)):
+        imgs = imgs.to(device, non_blocking=True).float()
+        labels = labels.to(device, non_blocking=True).long()
         
         with torch.autocast(device_type="cuda", dtype=torch.float16):
-                _, logit = model(img)
-                loss = criterion(logit, label)
+                _, logits = model(imgs)
+                loss = criterion(logits, labels)
             
         optimizer.zero_grad()
         scaler.scale(loss).backward()
@@ -31,27 +31,25 @@ def train(device, train_loader, model, criterion, optimizer, scaler, epoch):
         scaler.update()
         
         sum_loss += loss.item()
-        count += torch.sum(logit.argmax(dim=1) == label).item()
+        count += torch.sum(logits.argmax(dim=1) == labels).item()
         
     return sum_loss, count
 
 def train_metric(device, train_loader, model, optimizer, scaler, epoch, ce_loss_func, metric_loss_func, _lambda):
     model.train()
-    
     sum_ce_loss = 0.0
     sum_metric_loss = 0.0
     sum_loss = 0.0
     count = 0
 
-    for idx, (img, label) in enumerate(tqdm(train_loader)):
-        img = img.to(device, non_blocking=True).float()
-        label = label.to(device, non_blocking=True).long()
+    for idx, (imgs, labels) in enumerate(tqdm(train_loader)):
+        imgs = imgs.to(device, non_blocking=True).float()
+        labels = labels.to(device, non_blocking=True).long()
 
         with torch.autocast(device_type="cuda", dtype=torch.float16):
-            features, logit = model(img)
-
-            ce_loss = ce_loss_func(logit, label)
-            metric_loss = _lambda * metric_loss_func(features, label)            
+            features, logits = model(imgs)
+            ce_loss = ce_loss_func(logits, labels)
+            metric_loss = _lambda * metric_loss_func(features, labels)            
             loss = ce_loss + metric_loss
             
         optimizer.zero_grad()
@@ -62,25 +60,24 @@ def train_metric(device, train_loader, model, optimizer, scaler, epoch, ce_loss_
         sum_ce_loss += ce_loss.item()
         sum_metric_loss += metric_loss.item()
         sum_loss += loss.item()
-        count += torch.sum(logit.argmax(dim=1) == label).item()
-        
+        count += torch.sum(logits.argmax(dim=1) == labels).item()
+
     return sum_ce_loss, sum_metric_loss, sum_loss, count
 
 def train_softmax(device, train_loader, model, optimizer, scaler, epoch, ce_loss_func, metric_head, _lambda):
     model.train()
     metric_head.train()
-    
     sum_loss = 0.0
     count = 0
 
-    for idx, (img, label) in enumerate(tqdm(train_loader)):
-        img = img.to(device, non_blocking=True).float()
-        label = label.to(device, non_blocking=True).long()
+    for idx, (imgs, labels) in enumerate(tqdm(train_loader)):
+        imgs = imgs.to(device, non_blocking=True).float()
+        labels = labels.to(device, non_blocking=True).long()
 
         with torch.autocast(device_type="cuda", dtype=torch.float16):
-            _, feat = model(img)
-            logit = metric_head(feat, label)
-            loss = ce_loss_func(logit, label)
+            _, feat = model(imgs)
+            logits = metric_head(feat, labels)
+            loss = ce_loss_func(logits, labels)
             
         optimizer.zero_grad()
         scaler.scale(loss).backward()
@@ -88,7 +85,7 @@ def train_softmax(device, train_loader, model, optimizer, scaler, epoch, ce_loss
         scaler.update()
         
         sum_loss += loss.item()
-        count += torch.sum(logit.argmax(dim=1) == label).item()
+        count += torch.sum(logits.argmax(dim=1) == labels).item()
         
     return 0, 0, sum_loss, count
 
@@ -96,53 +93,54 @@ def validation(device, val_loader, model, ce_loss_func, metric_loss_func):
     model.eval()
     sum_loss = 0.0
     count = 0
+    features_list = []
+    labels_list = []
 
     with torch.no_grad():
-        for idx, (img, label) in enumerate(tqdm(val_loader)):
-            img = img.to(device, non_blocking=True).float()
-            label = label.to(device, non_blocking=True).long()
+        for idx, (imgs, labels) in enumerate(tqdm(val_loader)):
+            imgs = imgs.to(device, non_blocking=True).float()
+            labels = labels.to(device, non_blocking=True).long()
             
             with torch.autocast(device_type="cuda", dtype=torch.float16):
-                _, logit = model(img)
-                loss = ce_loss_func(logit, label)
+                features, logits = model(imgs)
+                loss = ce_loss_func(logits, labels)
+
+                features_list.append(features.cpu().detach().numpy())
+                labels_list.append(labels.cpu().detach().numpy())
 
             sum_loss += loss.item()
-            count += torch.sum(logit.argmax(dim=1) == label).item()
+            count += torch.sum(logits.argmax(dim=1) == labels).item()
 
-    return sum_loss, count
+    features_np = np.concatenate(features_list, 0)
+    labels_np = np.concatenate(labels_list, 0)
+
+    return sum_loss, count, features_np, labels_np
 
 def validation_softmax(device, val_loader, model, ce_loss_func, metric_head):
     model.eval()
     metric_head.eval()
     sum_loss = 0.0
     count = 0
+    features_list = []
+    labels_list = []
 
     with torch.no_grad():
-        for idx, (img, label) in enumerate(tqdm(val_loader)):
-            img = img.to(device, non_blocking=True).float()
-            label = label.to(device, non_blocking=True).long()
+        for idx, (imgs, labels) in enumerate(tqdm(val_loader)):
+            imgs = imgs.to(device, non_blocking=True).float()
+            labels = labels.to(device, non_blocking=True).long()
             
             with torch.autocast(device_type="cuda", dtype=torch.float16):
-                _, feat = model(img)
-                logit = metric_head(feat, label)
-                loss = ce_loss_func(logit, label)
+                _, features = model(imgs)
+                logits = metric_head(features, labels)
+                loss = ce_loss_func(logits, labels)
+
+                features_list.append(features.cpu().detach().numpy())
+                labels_list.append(labels.cpu().detach().numpy())
 
             sum_loss += loss.item()
-            count += torch.sum(logit.argmax(dim=1) == label).item()
+            count += torch.sum(logits.argmax(dim=1) == labels).item()
 
-    return sum_loss, count
+    features_np = np.concatenate(features_list, 0)
+    labels_np = np.concatenate(labels_list, 0)
 
-def save_augmented_images(images1, images2, epoch, output_dir="augmented_samples", max_images=16):
-    if epoch != 0:
-        return
-
-    os.makedirs(output_dir, exist_ok=True)
-    to_pil = ToPILImage()
-    images1 = images1.cpu()
-    images2 = images2.cpu()
-
-    for i in range(min(len(images1), max_images)):
-        img1 = to_pil(images1[i])
-        img1.save(os.path.join(output_dir, f"epoch{epoch+1}_img1{i}.png"))
-        img2 = to_pil(images2[i])
-        img2.save(os.path.join(output_dir, f"epoch{epoch+1}_img2{i}.png"))
+    return sum_loss, count, features_np, labels_np

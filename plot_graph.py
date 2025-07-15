@@ -52,6 +52,7 @@ def plot_acc(epochs, train_acc, val_acc, save_path):
 
 def load_csv(args):
     csv_file = args.csv_path
+    print(csv_file)
     save_path = '/'.join(csv_file.split('/')[:-1]) + '/'
 
     epochs = []

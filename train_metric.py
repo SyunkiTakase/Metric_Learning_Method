@@ -5,6 +5,9 @@ import argparse
 import pandas as pd
 import importlib.util
 from datetime import datetime
+import matplotlib.pyplot as plt
+
+from sklearn.manifold import TSNE
 
 import torch
 import torch.nn as nn
@@ -13,30 +16,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 from method_config import build_metric_method
-
-def load_config(config_path):
-
-    spec = importlib.util.spec_from_file_location("config_module", config_path)
-    config_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(config_module)
-
-    return config_module.config
-
-def save_to_csv(csv_file, epoch, train_loss=None, ce_loss=None, metric_loss=None, train_acc=None, val_loss=None, val_acc=None):
-
-    new_row = [
-        epoch,
-        train_loss if train_loss is not None else '',
-        ce_loss if ce_loss is not None else '',
-        metric_loss if metric_loss is not None else '',
-        train_acc if train_acc is not None else '',
-        val_loss if val_loss is not None else '',
-        val_acc if val_acc is not None else ''
-    ]
-    
-    with open(csv_file, mode='a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(new_row)
+from utils import load_config, save_model, save_log, save_map
 
 def main(config_path, config):
 
@@ -59,6 +39,7 @@ def main(config_path, config):
     num_dim = config['num_dim']
     use_hard_triplets = config['hard_triplets']
     easy_margin = config['easy_margin']
+    plot_map = config["plot_map"]
 
     # 出力を保存するディレクトリ作成
     base_path = './output/' + method +'/' + str(timestamp) + '/'
@@ -67,10 +48,12 @@ def main(config_path, config):
         path = base_path + sub
         os.makedirs(path, exist_ok=True)
 
-    csv_file = base_path + 'log/log.csv'
-    if not os.path.exists(csv_file):
-        # ヘッダーを作成
-        with open(csv_file, mode='w', newline='') as f:
+    model_path = base_path + 'model/' 
+    log_path = base_path + 'log/log.csv'
+    map_path = base_path + 'map/'
+
+    if not os.path.exists(log_path):
+        with open(log_path, mode='w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Epoch', 'Train Loss', 'CE Loss', 'Metric Loss', 'Train Acc', 'Val Loss', 'Val Acc'])
 
@@ -129,7 +112,7 @@ def main(config_path, config):
         ce_loss, metric_loss, train_loss, train_count = train_fn(
             device, train_loader, model, optimizer, scaler, epoch, ce_loss_func, metric_loss_func, _lambda
         )
-        val_loss, val_count = validation_fn(
+        val_loss, val_count, features_np, labels_np = validation_fn(
             device, val_loader, model, ce_loss_func, metric_loss_func
         )
 
@@ -137,19 +120,19 @@ def main(config_path, config):
         print(f'Epoch [{epoch+1}/{num_epoch}], Validation Loss: {val_loss/len(val_loader):.4f} ')
         print(f'Epoch [{epoch+1}/{num_epoch}], Trainig Acc: {train_count/len(train_loader.dataset):.4f}, Validation Acc: {val_count/len(val_loader.dataset):.4f} ')
 
-        # ログとモデルを保存
-        save_to_csv(
-            csv_file, epoch, train_loss/len(train_loader), ce_loss/len(train_loader), metric_loss/len(train_loader),
+        # ログ，モデル，t-SNEを保存
+        if (epoch+1) % 1 == 0:
+            save_model_path = model_path + str(epoch + 1) + '.tar'
+            save_model(model, optimizer, epoch, save_model_path)
+
+        save_log(
+            log_path, epoch, train_loss/len(train_loader), ce_loss/len(train_loader), metric_loss/len(train_loader),
                         train_count/len(train_loader.dataset), val_loss/len(val_loader), val_count/len(val_loader.dataset)
         )
-        if (epoch+1) % 1 == 0:
-            print('saved!!')
-            save_model_path = base_path + 'model/' + str(epoch + 1) + '.tar'
-            torch.save({
-                    'model':model.state_dict(),
-                    'optimizer':optimizer.state_dict(),
-                    'epoch':epoch
-            }, save_model_path)
+
+        if plot_map:
+            save_map_path = map_path + str(epoch + 1) + '.png'
+            save_map(features_np, labels_np, class_names, save_map_path)
 
 if __name__=='__main__':
 

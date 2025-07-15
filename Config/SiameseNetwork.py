@@ -7,7 +7,7 @@ config = {
     "weight_decay": 1e-4,
     "momentum": None,
     "img_size": 224,
-    "dataset": "cifar100",
+    "dataset": "cifar10",
     "margin": 1.0,
     "scale": None,
     "method": "SiameseNetwork",
@@ -16,6 +16,7 @@ config = {
     "num_dim": None,
     "hard_triplets": None,
     "easy_margin": None,
+    "plot_map": True
 }
 
 

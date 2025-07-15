@@ -6,8 +6,8 @@ config = {
     "lr": 1e-3,
     "weight_decay": 1e-4,
     "momentum": 0.9,
-    "img_size": 32,
-    "dataset": "cifar100",
+    "img_size": 224,
+    "dataset": "cifar10",
     "margin": 1.0,
     "scale": None,
     "method": "TripletLoss",
@@ -16,6 +16,7 @@ config = {
     "num_dim": None,
     "hard_triplets": None,
     "easy_margin": None,
+    "plot_map": True
 }
 
 
