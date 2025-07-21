@@ -11,6 +11,23 @@ from torchvision.models import resnet18, resnet34, resnet50, resnet152, vgg11, v
 import base_model
 
 class MetricModel(nn.Module):
+    """
+    メトリック学習モデルの定義
+
+    Parameters
+    ----------
+    method : str
+        使用するメトリック学習手法の名前
+    arch : str
+        使用するアーキテクチャの名前
+    num_dim : int
+        特徴量の次元数
+    num_classes : int
+        分類クラス数
+    Returns
+    -------
+    None
+    """
     def __init__(self, method='SiameseNetwork', arch='ResNet18', num_dim=512, num_classes=10):
         super(MetricModel, self).__init__()
         self.method = method
@@ -19,9 +36,9 @@ class MetricModel(nn.Module):
         self.num_classes = num_classes
         
         self.selected_arch(arch=self.arch)
-        last_layers = ['fc', 'classifier', 'heads']
+        last_layers = ['fc', 'classifier', 'heads'] # 最終層の名前リスト
 
-        for layer in last_layers:
+        for layer in last_layers: # 最終層の名前を順に確認
             if hasattr(self.encoder, layer):
                 # 最終層がSequentialの場合
                 if isinstance(getattr(self.encoder, layer), nn.Sequential):
@@ -30,7 +47,7 @@ class MetricModel(nn.Module):
                     self.out_enc_dim = getattr(self.encoder, layer).in_features
                 break
 
-        for layer in last_layers:
+        for layer in last_layers: # 最終層の名前を順に確認
             if hasattr(self.encoder, layer):
                 # 最終層がSequentialの場合
                 if isinstance(getattr(self.encoder, layer), nn.Sequential):
@@ -39,18 +56,43 @@ class MetricModel(nn.Module):
                     setattr(self.encoder, layer, nn.Identity())
                 break
 
-        if self.method == 'ArcFace' or self.method == 'CosFace' or self.method == 'SphereFace':
-            self.classifier = nn.Linear(self.out_enc_dim, self.num_dim)
-        else:
-            self.classifier = nn.Linear(self.out_enc_dim, self.num_classes)
+        if self.method == 'ArcFace' or self.method == 'CosFace' or self.method == 'SphereFace': # ArcFace/CosFace/SphereFaceを使用する場合
+            self.classifier = nn.Linear(self.out_enc_dim, self.num_dim) # 特徴量の次元をnum_dimに変更
+        else: # その他の手法を使用する場合
+            self.classifier = nn.Linear(self.out_enc_dim, self.num_classes) # 分類クラス数に変更
 
     def forward(self, x):
+        """
+        順伝播の定義
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            入力画像のテンソル
+        Returns
+        -------
+        feat : torch.Tensor
+            特徴量
+        y : torch.Tensor
+            分類結果
+        """
         feat = self.encoder(x)
         y = self.classifier(feat)
 
         return feat, y
     
     def selected_arch(self, arch):
+        """
+        使用するアーキテクチャを選択する
+
+        Parameters
+        ----------
+        arch : str
+            使用するアーキテクチャの名前
+        Returns
+        -------
+        None
+        """
         arch_map = {
             'ResNet18': resnet18,
             'ResNet34': resnet34,
